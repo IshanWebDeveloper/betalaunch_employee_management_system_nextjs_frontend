@@ -45,9 +45,7 @@ function AddEmployeeModal({ close }: any) {
         },
         mode: "cors",
         body: JSON.stringify(FormData),
-      })
-        .then((res) => res.json())
-        .then((data) => console.log(data));
+      }).then((res) => res.json());
     } catch (error) {
       console.error(error);
     }
