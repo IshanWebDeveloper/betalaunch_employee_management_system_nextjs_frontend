@@ -2,7 +2,18 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+First,
+
+1. unzip the files, and then
+
+```bash
+cd into the directory
+npm install
+```
+
+2. provide local environment NEXT_PUBLIC_BACKEND_URL via .env.local
+
+ run the development server:
 
 ```bash
 npm run dev
