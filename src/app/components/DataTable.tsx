@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { DataGrid, GridColDef, GridSelectionModel } from "@mui/x-data-grid";
+import Link from "next/link";
 
 interface rowData {
   id?: number;
@@ -16,7 +17,11 @@ interface rowData {
 export default function DataTable() {
   const [data, setData] = useState([]);
   const [rows, setRows] = useState<Array<Object>>([]);
+
+  const [distinctEmpTypes, setEmpTypes] = useState([]);
+  const [selectEmpTypes, setSelectEmpType] = useState("");
   const [selectionRowID, setSelection] = useState<GridSelectionModel>([]);
+  const [empByTypeData, setEmpByTypeData] = useState([]);
 
   // Avoid a layout jump when reaching the last page with empty rows.
 
@@ -26,7 +31,10 @@ export default function DataTable() {
       mode: "cors",
     })
       .then((res) => res.json())
-      .then((backendData) => setData(backendData.employeeData));
+      .then((backendData) => {
+        setData(backendData.employeeData);
+        setEmpTypes(backendData.distinctEmpTypes);
+      });
     const rowInput = data?.map((el: any, i): rowData => {
       return {
         id: el?.EmployeeID,
@@ -39,14 +47,42 @@ export default function DataTable() {
       };
     });
     setRows(rowInput);
-  }, [data, selectionRowID]);
+  }, [data]);
+
+  useEffect(() => {
+    if (selectEmpTypes?.length > 0) {
+      fetch(
+        `${
+          process.env.NEXT_PUBLIC_BACKEND_URL
+        }/employees/empByType?type=${selectEmpTypes.replace(" ", "_")}`
+      )
+        .then((res) => res.json())
+        .then((empData) => setEmpByTypeData(empData));
+
+      // const rowInput2 = empByTypeData?.map((el: any, i): any => {
+      //   return {
+      //     id: el?.EmployeeID,
+      //     DisplayName: el.DisplayName,
+      //     Designation: el.Designation,
+      //     Employee_Type: el?.Employee_Type.replace("_", " "),
+      //     EmployeeID: el.EmployeeID,
+      //     Experience: `${el?.Experience} Years`,
+      //     EditBtn: <div></div>,
+      //   };
+      // });
+      // setRows(rowInput2);
+    }
+  }, [selectEmpTypes, empByTypeData]);
 
   const handleEmployeeEdit = () => {};
   const handleEmployeeDelete = () => {
-    fetch(`${process.env.BACKEND_URL}/employees/${selectionRowID}`, {
-      method: "DELETE",
-      mode: "cors",
-    })
+    fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/employees/${selectionRowID}`,
+      {
+        method: "DELETE",
+        mode: "cors",
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
@@ -92,15 +128,20 @@ export default function DataTable() {
           title="EmpType"
           id="EmpType"
           name="EmpType"
+          value={selectEmpTypes}
+          onChange={(e) => setSelectEmpType(e.target.value)}
           className="mt-2  block  rounded-md border-0 bg-white py-1.5 text-defaultBlue shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
         >
-          <option value="">Full Time</option>
-          <option value=""></option>
-          <option value=""></option>
+          {distinctEmpTypes?.map((el: any, i) => (
+            <option key={i}>{el?.Employee_Type?.replace("_", " ")}</option>
+          ))}
         </select>
-        <button className="inline-flex justify-center rounded-md bg-[#0052EA] py-[10px] px-[16px] text-formBody text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+        <Link
+          href="/addEmployee"
+          className="inline-flex justify-center rounded-md bg-[#0052EA] py-[10px] px-[16px] text-formBody text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
           Add People
-        </button>
+        </Link>
       </div>
       <div className=" h-full w-full ">
         <DataGrid
